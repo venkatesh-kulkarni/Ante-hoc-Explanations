@@ -614,7 +614,7 @@ def concept_grid(model, data_loader, cuda=False, top_k = 6, layout = 'vertical',
 
     for i in range(num_concepts):
       
-      path = '/content/Ante-hoc_Explainability_Concepts/cifar10/test/{}'.format(i+1)
+      path = '/content/Ante-hoc-Explanations/cifar10/test/{}'.format(i+1)
       if not os.path.exists(path):
           os.mkdir(path)
 
@@ -740,7 +740,7 @@ def concept_grid(model, data_loader, cuda=False, top_k = 6, layout = 'vertical',
             
             
             axes[pos].imshow(top_examples[i][j], cmap='Greys',  interpolation='nearest')
-            img_dir = '/content/Ante-hoc_Explainability_Concepts/cifar10/output/' + str(i + 1) + '/'
+            img_dir = '/content/Ante-hoc-Explanations/cifar10/output/' + str(i + 1) + '/'
 
             if not os.path.exists(img_dir):
                 os.mkdir(img_dir)
