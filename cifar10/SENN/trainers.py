@@ -741,7 +741,7 @@ class GradPenaltyTrainer(ClassificationTrainer):
         all_losses['auxiliary_prediction'] = aux_loss.item()
         if self.learning_h:
             h_loss = self.concept_learning_loss(inputs, all_losses)
-            loss = pred_loss + 0.0001 * aux_loss + 0.01 * h_loss
+            loss = pred_loss + 0.01 * aux_loss + 0.01 * h_loss
             # loss = pred_loss
         else:
             loss = pred_loss
