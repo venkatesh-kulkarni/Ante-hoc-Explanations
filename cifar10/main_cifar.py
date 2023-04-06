@@ -149,7 +149,11 @@ def main():
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     args.nclasses = 10
+    args.nconcepts = 5
+    args.epochs = 5
     args.theta_dim = args.nclasses
+    args.h_sparsity = 0.01
+
     if (args.theta_arch == 'simple') or ('vgg' in args.theta_arch):
         H, W = 32, 32
     else:
@@ -158,6 +162,7 @@ def main():
     args.input_dim = H*W
 
     model_path, log_path, results_path = generate_dir_names('cifar', args)
+    print('Result path: ', results_path)
 
     train_loader, valid_loader, test_loader, train_tds, test_tds = load_cifar_data(
                         batch_size=args.batch_size,num_workers=args.num_workers,
@@ -187,7 +192,7 @@ def main():
     else:
         parametrizer = torchvision_parametrizer(args.input_dim, args.nconcepts, args.theta_dim, arch = args.theta_arch, nchannel = 3, only_positive = args.positive_theta) #torchvision.models.alexnet(num_classes = args.nconcepts*args.theta_dim)
 
-
+    # for the fidelity branch
     aggregator   = additive_scalar_aggregator(args.nconcepts, args.concept_dim, args.nclasses)
 
     # model        = GSENN(conceptizer, parametrizer, aggregator) #, learn_h = args.train_h)
@@ -201,7 +206,7 @@ def main():
     elif args.theta_reg_type == 'grad2':
         trainer = GradPenaltyTrainer(model, args, typ = 2)
     elif args.theta_reg_type == 'grad3':
-        trainer = GradPenaltyTrainer(model, args, typ = 3)
+        trainer = GradPenaltyTrainer(model, args, typ = 3)   #####
     # elif args.theta_reg_type == 'crosslip':
     #     trainer = CLPenaltyTrainer(model, args)
     else:
@@ -222,7 +227,7 @@ def main():
     checkpoint = torch.load(os.path.join(model_path,'model_best.pth.tar'), map_location=lambda storage, loc: storage)
     checkpoint.keys()
     model = checkpoint['model']
-    trainer =  VanillaClassTrainer(model, args)
+    trainer = GradPenaltyTrainer(model, args, typ = 3)
     trainer.evaluate(test_loader, fold = 'test')
 
     # # pytorch_total_params = sum(p.numel() for p in model.parameters())
@@ -233,7 +238,8 @@ def main():
     # All_Results = {}
 
     # 0. Concept Grid for Visualization
-    concept_grid(model, test_loader, top_k = 10, cuda = args.cuda, save_path = results_path + '/concept_grid.pdf')
+    print(len(test_loader))
+    concept_grid(model, test_loader, top_k = 6, cuda = args.cuda, save_path = results_path + '/concept_grid.pdf')
 
 if __name__ == '__main__':
     main()
