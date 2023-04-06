@@ -209,6 +209,7 @@ class ClassificationTrainer():
         self.model = model
         self.args = args
         self.cuda = args.cuda
+        self.h_sparsity = args.h_sparsity
 
         self.nclasses = args.nclasses
 
@@ -491,39 +492,9 @@ class ClassificationTrainer():
 
             data, targets = Variable(data, volatile=True), Variable(targets)
 
-            # if self.reset_lstm:
-            #     self.model.zero_grad()
-            #     self.model.parametrizer.hidden = self.model.parametrizer.init_hidden()# detaching it from its history on the last instance.
-
             output, output_aux, concepts, _ = self.model(data)
             #test_loss += self.prediction_criterion(output, targets.view(targets.size(0))).data[0]
             test_loss += self.prediction_criterion(output, targets).item()
-
-            # if targets == 7:
-            #     concepts_test = concepts[0].cpu().detach().numpy()
-            #     # concepts_norm = scale(concepts_test, 0, 1)
-            #     # print (concepts_test.shape)
-            #     print (i)
-            #     # y.append(concepts_test)
-            #     y = y + concepts_test
-            #     save_image(data[0], os.path.join('/home/cs16resch11006/CIFAR10/scripts/test3/', str(i)+'.png'))
-
-            # # print (concepts)
-            # concepts_test = concepts[0].cpu().detach().numpy()
-            # concepts_norm = scale(concepts_test, 0, 1)
-            # # concepts_topp = np.percentile(concepts_test, 20, axis=0)
-            # # # print (concepts_topp)
-            # # print (concepts_norm<=0.99)
-            # concepts_least = concepts_test*(concepts_norm<=0.99)
-            # # # concepts_most = concepts_test*(concepts_norm>0.8)
-            # # concepts_least = concepts_test*(concepts_test>concepts_topp)
-            # # print (concepts_least) 
-            # # print (i)
-            # output_interv = self.model.aggregator(torch.from_numpy(concepts_least).cuda())
-            # # # print (output_interv)
-
-            # save_image(data[0], os.path.join('/home/cs16resch11006/CIFAR10/scripts/test/', str(i)+'.png'))
-            # # sys.exit()
 
             #print(output)
             if self.nclasses == 2:
@@ -542,7 +513,7 @@ class ClassificationTrainer():
             correct_aux += pred_aux.eq(targets.data).cpu().sum()
 
         # y = np.asarray(y)
-        print (y)
+        # print (y)
         # print (np.argmax(y1,0))
         # print (np.argsort(-y1,axis=0)[:4])
         # print (np.argpartition(y1, -5, axis=0)[:, -5:])
@@ -770,7 +741,7 @@ class GradPenaltyTrainer(ClassificationTrainer):
         all_losses['auxiliary_prediction'] = aux_loss.item()
         if self.learning_h:
             h_loss = self.concept_learning_loss(inputs, all_losses)
-            loss = pred_loss + 0.0001 * aux_loss # + 0.0001 * h_loss
+            loss = pred_loss + 0.0001 * aux_loss + 0.01 * h_loss
             # loss = pred_loss
         else:
             loss = pred_loss
