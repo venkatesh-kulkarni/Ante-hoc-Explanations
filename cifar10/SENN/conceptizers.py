@@ -429,7 +429,8 @@ class image_resnet_conceptizer(AutoEncoder):
         # out = self.avgpool(out)
         out = out.view(out.size(0), -1)
         # print (out.shape)
-        encoded = F.relu(self.conc_linear1(out)).view(-1, self.nconcept, self.cdim)
+        leaky_relu = torch.nn.LeakyReLU(negative_slope=0.01)
+        encoded = leaky_relu(self.conc_linear1(out)).view(-1, self.nconcept, self.cdim)
         logits = self.conc_linear2(out)
 
         # print (self.din)
