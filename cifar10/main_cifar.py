@@ -126,9 +126,9 @@ def parse_args():
     #####
 
     args = parser.parse_args()
-    print("\nParameters:")
-    for attr, value in sorted(args.__dict__.items()):
-        print("\t{}={}".format(attr.upper(), value))
+    # print("\nParameters:")
+    # for attr, value in sorted(args.__dict__.items()):
+    #     print("\t{}={}".format(attr.upper(), value))
 
     return args
 
@@ -149,10 +149,14 @@ def main():
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     args.nclasses = 10
-    args.nconcepts = 5
+    args.nconcepts = 20
     args.epochs = 5
     args.theta_dim = args.nclasses
-    args.h_sparsity = 0.01
+    args.h_sparsity = -1
+
+    print("\nParameters:")
+    for attr, value in sorted(args.__dict__.items()):
+        print("\t{}={}".format(attr.upper(), value))
 
     if (args.theta_arch == 'simple') or ('vgg' in args.theta_arch):
         H, W = 32, 32
