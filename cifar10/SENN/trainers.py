@@ -310,6 +310,27 @@ class ClassificationTrainer():
 
         return recons_loss
 
+    def compute_corr_loss(self, concept_vector):
+
+        concept_vector = torch.squeeze(concept_vector)
+        batch_size,nconcepts = concept_vector.shape[0], concept_vector.shape[1]
+        loss = 0
+        correlation_matrix = torch.zeros((concept_vector.shape[1], concept_vector.shape[1]))
+
+        for i in range(nconcepts):
+          X = concept_vector[:, i]
+          for j in range(nconcepts):
+            Y = concept_vector[:, j]
+            num = torch.sum((X-X.mean())*(Y-Y.mean())).item()
+            den = torch.sqrt(torch.sum((X-X.mean())**2)*torch.sum((Y-Y.mean())**2))
+            correlation_matrix[i][j] = num/den    
+
+            if j>i:
+              loss += abs(num/den) 
+
+        loss/=batch_size
+        return loss
+    
     def train_epoch(self, epoch, train_loader):
         """
             Does mostly accounting. The actual trianing is done by the train_batch method.
@@ -742,7 +763,7 @@ class GradPenaltyTrainer(ClassificationTrainer):
         inputs.requires_grad = True
 
         # Predict
-        pred1, pred2, _, _ = self.model(inputs)
+        pred1, pred2, concepts, _ = self.model(inputs)
 
         # Calculate loss
         pred_loss       = self.prediction_criterion(pred1, targets)
@@ -754,7 +775,9 @@ class GradPenaltyTrainer(ClassificationTrainer):
         all_losses['auxiliary_prediction'] = aux_loss.item()
         if self.learning_h:
             h_loss = self.concept_learning_loss(inputs, all_losses)
-            loss = pred_loss + 0.01 * aux_loss + 0.01 * h_loss
+            corr_loss = self.compute_corr_loss(concepts)
+            print(f'Corr Loss = {corr_loss}')
+            loss = pred_loss + 0.01 * aux_loss + 0.01 * h_loss + 0.01*corr_loss
             # loss = pred_loss
         else:
             loss = pred_loss
