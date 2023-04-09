@@ -302,9 +302,12 @@ class ClassificationTrainer():
 
         all_losses['reconstruction'] = recons_loss.item()
         if self.h_sparsity != -1:
-            sparsity_loss   = self.model.h_norm_l1.mul(self.h_sparsity)
+            alpha = 0.5
+            sparsity_loss   = alpha*(self.model.h_norm_l1.mul(self.h_sparsity)) + (1-alpha)*(self.model.h_norm_l2.mul(self.h_sparsity))
             all_losses['h_sparsity'] = sparsity_loss.item()
+            print('Reconstruction Loss = ', recons_loss.item(), ' Sparsity Loss = ', sparsity_loss.item())
             recons_loss += sparsity_loss
+
         return recons_loss
 
     def train_epoch(self, epoch, train_loader):
@@ -439,8 +442,17 @@ class ClassificationTrainer():
             target_var = torch.autograd.Variable(targets, volatile=True)
 
             # compute output
-            output, _, _, _ = self.model(input_var)
+            output, _, concepts, _ = self.model(input_var)
             loss   = self.prediction_criterion(output, target_var)
+            
+            # print('*'*50)
+            # print('Batch ', i)
+            # print('*'*50)
+            
+            # for idx in range(len(concepts)):
+            #   single_cv = concepts[idx]
+            #   single_cv = torch.squeeze(single_cv)
+            #   print(f'Concept vector {idx}: ', single_cv)
 
             # measure accuracy and record loss
             if self.nclasses > 4:
@@ -493,6 +505,7 @@ class ClassificationTrainer():
             data, targets = Variable(data, volatile=True), Variable(targets)
 
             output, output_aux, concepts, _ = self.model(data)
+        
             #test_loss += self.prediction_criterion(output, targets.view(targets.size(0))).data[0]
             test_loss += self.prediction_criterion(output, targets).item()
 
