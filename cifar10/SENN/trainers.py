@@ -801,7 +801,7 @@ class GradPenaltyTrainer(ClassificationTrainer):
         mean_cv = torch.squeeze(mean_cv)
         print('Mean Concept Vector ', mean_cv)
 
-        rand_indices = torch.randint(1, 128, (10,))
+        rand_indices = torch.randint(1, len(inputs), (10,))
 
         for i in rand_indices:
             print(f'Concept idx = {i} ', torch.squeeze(concepts[i]))
