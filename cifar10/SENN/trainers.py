@@ -489,7 +489,7 @@ class ClassificationTrainer():
             #   single_cv = torch.squeeze(single_cv)
             #   print(f'Concept vector {idx}: ', single_cv)
 
-            corr_loss, correlation_matrix = compute_corr_loss_vectorized(concepts)
+            corr_loss, correlation_matrix = self.compute_corr_loss_vectorized(concepts)
             print('*'*50)
             print(f'Correlation Loss = {corr_loss}')
             print(correlation_matrix)
