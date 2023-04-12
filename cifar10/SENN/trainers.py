@@ -804,7 +804,7 @@ class GradPenaltyTrainer(ClassificationTrainer):
         rand_indices = torch.randint(1, 128, (10,))
 
         for i in rand_indices:
-            print(f'idx = {i} ', torch.squeeze(concepts[i]))
+            print(f'Concept idx = {i} ', torch.squeeze(concepts[i]))
         #torch.autograd.backward(pred_loss, create_graph=True)
         #print(pred.grad.size())
         #update1 = model.weight.grad.data.clone()
