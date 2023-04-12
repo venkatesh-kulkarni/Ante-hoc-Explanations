@@ -343,7 +343,7 @@ class ClassificationTrainer():
               if j>i:
                 loss+=abs(correlation_matrix[i][j])
 
-        return loss
+        return loss, correlation_matrix
     
     def train_epoch(self, epoch, train_loader):
         """
@@ -488,6 +488,16 @@ class ClassificationTrainer():
             #   single_cv = concepts[idx]
             #   single_cv = torch.squeeze(single_cv)
             #   print(f'Concept vector {idx}: ', single_cv)
+
+            corr_loss, correlation_matrix = compute_corr_loss_vectorized(concepts)
+            print('*'*50)
+            print(f'Correlation Loss = {corr_loss}')
+            print(correlation_matrix)
+            print('*'*50)
+
+            rand_indices = torch.randint(1, len(inputs), (10,))
+            for i in rand_indices:
+                print(f'Concept idx = {i} ', torch.squeeze(concepts[i]))
 
             # measure accuracy and record loss
             if self.nclasses > 4:
@@ -791,20 +801,23 @@ class GradPenaltyTrainer(ClassificationTrainer):
             h_loss = self.concept_learning_loss(inputs, all_losses)
             # corr_loss = self.compute_corr_loss(concepts)
             corr_loss = self.compute_corr_loss_vectorized(concepts)
-            print(f'Corr Loss = {corr_loss}')
+            all_losses['correlation_loss'] = corr_loss
+            # print(f'Corr Loss = {corr_loss}')
             loss = pred_loss + 0.01 * aux_loss + 0.01 * h_loss + 0.01*corr_loss
             # loss = pred_loss
         else:
             loss = pred_loss
         
-        mean_cv = torch.mean(concepts, dim=0)
-        mean_cv = torch.squeeze(mean_cv)
-        print('Mean Concept Vector ', mean_cv)
+        # mean_cv = torch.mean(concepts, dim=0)
+        # mean_cv = torch.squeeze(mean_cv)
+        # print('Mean Concept Vector ', mean_cv)
 
-        rand_indices = torch.randint(1, len(inputs), (10,))
+        # rand_indices = torch.randint(1, len(inputs), (10,))
 
-        for i in rand_indices:
-            print(f'Concept idx = {i} ', torch.squeeze(concepts[i]))
+        # for i in rand_indices:
+        #     print(f'Concept idx = {i} ', torch.squeeze(concepts[i]))
+        
+        
         #torch.autograd.backward(pred_loss, create_graph=True)
         #print(pred.grad.size())
         #update1 = model.weight.grad.data.clone()
