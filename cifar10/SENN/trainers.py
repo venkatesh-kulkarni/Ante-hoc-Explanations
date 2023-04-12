@@ -800,7 +800,7 @@ class GradPenaltyTrainer(ClassificationTrainer):
         if self.learning_h:
             h_loss = self.concept_learning_loss(inputs, all_losses)
             # corr_loss = self.compute_corr_loss(concepts)
-            corr_loss = self.compute_corr_loss_vectorized(concepts)
+            corr_loss, correlation_matrix = self.compute_corr_loss_vectorized(concepts)
             all_losses['correlation_loss'] = corr_loss
             # print(f'Corr Loss = {corr_loss}')
             loss = pred_loss + 0.01 * aux_loss + 0.01 * h_loss + 0.01*corr_loss
