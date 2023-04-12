@@ -330,6 +330,20 @@ class ClassificationTrainer():
 
         loss/=batch_size
         return loss
+
+    def compute_corr_loss_vectorized(self, concept_vector):
+
+        concept_vector = torch.squeeze(concept_vector)
+        concept_vector = torch.transpose(concept_vector, 0,1)
+        correlation_matrix = torch.corrcoef(concept_vector)
+
+        loss = 0
+        for i in range(correlation_matrix.shape[0]):
+          for j in range(correlation_matrix.shape[1]):
+              if j>i:
+                loss+=abs(correlation_matrix[i][j])
+
+        return loss
     
     def train_epoch(self, epoch, train_loader):
         """
@@ -775,13 +789,22 @@ class GradPenaltyTrainer(ClassificationTrainer):
         all_losses['auxiliary_prediction'] = aux_loss.item()
         if self.learning_h:
             h_loss = self.concept_learning_loss(inputs, all_losses)
-            corr_loss = self.compute_corr_loss(concepts)
+            # corr_loss = self.compute_corr_loss(concepts)
+            corr_loss = self.compute_corr_loss_vectorized(concepts)
             print(f'Corr Loss = {corr_loss}')
             loss = pred_loss + 0.01 * aux_loss + 0.01 * h_loss + 0.01*corr_loss
             # loss = pred_loss
         else:
             loss = pred_loss
+        
+        mean_cv = torch.mean(concepts, dim=0)
+        mean_cv = torch.squeeze(mean_cv)
+        print('Mean Concept Vector ', mean_cv)
 
+        rand_indices = torch.randint(1, 128, (10,))
+
+        for i in rand_indices:
+            print(f'idx = {i} ', torch.squeeze(concepts[i]))
         #torch.autograd.backward(pred_loss, create_graph=True)
         #print(pred.grad.size())
         #update1 = model.weight.grad.data.clone()
